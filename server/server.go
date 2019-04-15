@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	_ "net/http/pprof"
 	"net/url"
 	"os"
 	"os/exec"
@@ -258,6 +259,12 @@ func (a *ArgoCDServer) Run(ctx context.Context, port int) {
 		log.Fatal("Timed out waiting for project cache to sync")
 	}
 
+	go func() {
+		err := http.ListenAndServe(":6060", nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	a.stopCh = make(chan struct{})
 	<-a.stopCh
 	errors.CheckError(conn.Close())
